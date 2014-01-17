@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+</head>
+<body>
+	<script type="text/javascript" src="bower_components/underscore/underscore-min.js"></script>
+	<script type="text/javascript" src="build/injector.js"></script>
+	<script type="text/javascript">
+		var test = {
+			label:"test",
+			get:function(){
+				console.log("label:",this.label);
+			}
+		}
+		_.bindAll(test,'get');
+		var MyController = function(arg1,$test,arg2,$testFn,$test2Fn) {
+			console.log(arg1,$test,arg2,$testFn);
+			$testFn();
+			$test2Fn();
+		}
+		di("test",[])
+			.value("$test","test")
+			.factory("$testFn",["$test",function(test){return function $testFn(){ return console.log("$testFn->log $test",test);}}])
+			.provider("$test2Fn",function(){
+				var lalala = "lalala";
+				this.$get = ["$test",function(test){
+					return function(){
+						console.log("$test2Fn->log $test",test,lalala);
+					}
+				}]
+				this.setLalala = function(word){
+					lalala = word;
+				}
+			})
+			.config(function($test2FnProvider){
+				$test2FnProvider.setLalala("changed");
+			})
+			;
+
+
+		di("test2",["test"])
+			.config(function($test2FnProvider){
+				$test2FnProvider.setLalala("changed test2");
+			})
+			;
+			//.run(function($test){console.log("run:",$test);});
+		di(MyController,["test"])("ok","kakaka");
+		di(test.get,["test2"])();
+	</script>
+</body>
+</html>
